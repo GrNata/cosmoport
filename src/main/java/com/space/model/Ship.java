@@ -1,5 +1,11 @@
 package com.space.model;
 
+import javax.persistence.*;
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Comparator;
+import java.util.Date;
+
 @Entity
 @Table(name = "ship")
 
