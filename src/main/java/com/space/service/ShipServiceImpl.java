@@ -7,6 +7,9 @@ import com.space.repository.ShipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -119,6 +122,8 @@ public class ShipServiceImpl implements ShipService{
                                Double maxSpeed,
                                Boolean isUsed) {
         List<Ship> ships = repository.findAll();
+//        final Date afterDate = after == null ? null : new Date(after);
+//        final Date beforeDate = before == null ? null : new Date(before);
 
         if (name != null)               ships = listShipFromName(ships, name);
         if (planet != null)             ships = listShipFromPlanet(ships, planet);
@@ -142,7 +147,7 @@ public class ShipServiceImpl implements ShipService{
         List<Ship> ships = new ArrayList<>();
 
         for (Ship ship : list) {
-            if (ship.getPlanet().contains(planet))
+            if (ship.getPlanet().toLowerCase().contains(planet.toLowerCase()))
                 ships.add(ship);
         }
         return ships;
@@ -183,20 +188,22 @@ public class ShipServiceImpl implements ShipService{
     public List<Ship> listShipFromName(List<Ship> list, String name) {
         List<Ship> ships = new ArrayList<>();
         for (Ship ship : list){
-            if (ship.getName().contains(name))
+            if (ship.getName().toLowerCase().contains(name.toLowerCase()))
                 ships.add(ship);
         }
         return ships;
     }
-
+///////////////////////////////////////////////////////////////
     @Override
     public List<Ship> listShipFromAfterDate(List<Ship> list, Long afterDate) {
         List<Ship> ships = new ArrayList<>();
-        Date dateAfter = new Date(afterDate);
-
+//        Date dateAfter = new Date(afterDate);
+        Calendar afterCalendar = convertCalendar(new Date(afterDate));
         for (Ship ship : list){
-            if (dateAfter.getYear() < ship.getProdDate().getYear())
+//            if (dateAfter.getYear() < ship.getProdDate().getYear())
+            if (convertCalendar(ship.getProdDate()).after(afterCalendar))
                 ships.add(ship);
+//            System.out.println(ship.getProdDate()+" after "+dateAfter);
         }
         return ships;
     }
@@ -204,15 +211,19 @@ public class ShipServiceImpl implements ShipService{
     @Override
     public List<Ship> listShipFromBeforeDate(List<Ship> list, Long beforeDate) {
         List<Ship> ships = new ArrayList<>();
-        Date dateBefore = new Date(beforeDate);
+        Calendar beforeCalendar = convertCalendar(new Date(beforeDate));
+
+//        System.out.println(getShipById(5l).getProdDate()+" - "+new java.sql.Date(beforeDate));
 
         for (Ship ship : list){
-            if (ship.getProdDate().getYear() < dateBefore.getYear())
+            if (convertCalendar(ship.getProdDate()).before(beforeCalendar)) {
+//            if (new java.sql.Date(ship.getProdDate().getTime()).before(new java.sql.Date(beforeDate))) {
                 ships.add(ship);
+            }
         }
         return ships;
     }
-
+////////////////////////////////////////////////////////////
     @Override
     public List<Ship> listShipFromMaxRating(List<Ship> list, Double maxRating) {
         List<Ship> ships = new ArrayList<>();
@@ -386,6 +397,17 @@ public class ShipServiceImpl implements ShipService{
             });
         }
         return ships;
+    }
+
+    private Calendar convertCalendar(Date date){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar;
     }
 
 }
